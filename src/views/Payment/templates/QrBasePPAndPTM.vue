@@ -2,7 +2,11 @@
   <div class="container">
     <div class="header">
       <div class="title">Payment Amount</div>
-      <div class="amount">₹{{ orderData?.amount || 100 }}</div>
+      <div class="amount">₹{{ apiOrderData?.amount || 0 }}
+        <div class="countdown-timer" v-if="showCountdown && countdownTime">
+          {{ countdownTime }}
+        </div>
+      </div>
     </div>
     
     <div class="content">
@@ -63,11 +67,20 @@
         </button>
       </div>
     </div>
+    
+    <!-- 支付成功弹窗 -->
+    <div v-if="showSuccessModal" class="modal show" @click.self="closeModal">
+      <div class="modal-content">
+        <h3>支付成功！</h3>
+        <p>{{ successRedirectTime }} 秒后将自动跳转</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import type { OrderInfo } from '@/types/order'
 
 interface Props {
@@ -75,10 +88,18 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const route = useRoute()
 
 const selectedMethod = ref('paytm')
 const showModal = ref(false)
 const utrNumber = ref('')
+const apiOrderData = ref<any | null>(null)
+const isLoading = ref(true)
+const countdownTimer = ref<number | null>(null)
+const countdownTime = ref('')
+const showCountdown = ref(false)
+const showSuccessModal = ref(false)
+const successRedirectTime = ref(5)
 
 const paymentMethods = [
   { id: 'paytm', name: 'Paytm', icon: '/static/img/paytm.svg' },
@@ -95,8 +116,112 @@ const selectedMethodName = computed(() => {
 })
 
 const currentQrCode = computed(() => {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${selectedMethodName.value}:${props.orderData?.amount || 100}`
+  const qrData = apiOrderData.value?.qrCore || `${selectedMethodName.value}:${apiOrderData.value?.amount || 0}`
+  return apiOrderData.value?.qrCore 
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`
+    : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`
 })
+
+const fetchOrderInfo = async () => {
+  try {
+    const orderId = route.params.orderId as string
+    if (!orderId) {
+      handleError('订单ID不存在')
+      return
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/v1/common/collection/query_order?platform_order_no=${orderId}`)
+    const result = await response.json()
+    
+    if (result.success && result.data) {
+      apiOrderData.value = result.data
+      handleOrderStatus(result.data)
+    } else {
+      handleError('查询订单失败')
+    }
+  } catch (error) {
+    console.error('Failed to fetch order info:', error)
+    handleError('网络错误')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleOrderStatus = (orderData: any) => {
+  const status = orderData.status
+  
+  switch (status) {
+    case 20: // 已支付成功
+      handlePaymentSuccess(orderData)
+      break
+    case 10: // 待支付
+      startCountdown(orderData.expire_time)
+      break
+    case 40: // 支付失败
+    case 41: // 已取消
+    case 44: // 已退款
+      handleError('订单状态异常')
+      break
+    case 43: // 已失效
+      handleTimeout()
+      break
+    default:
+      handleError('未知订单状态')
+  }
+}
+
+const handlePaymentSuccess = (orderData: any) => {
+  if (orderData.return_url) {
+    showSuccessModal.value = true
+    startSuccessCountdown(orderData.return_url)
+  } else {
+    window.location.href = `${import.meta.env.VITE_APP_BASE_URL}/success.html`
+  }
+}
+
+const startSuccessCountdown = (returnUrl: string) => {
+  const timer = setInterval(() => {
+    successRedirectTime.value--
+    if (successRedirectTime.value <= 0) {
+      clearInterval(timer)
+      window.location.href = returnUrl
+    }
+  }, 1000)
+}
+
+const startCountdown = (expireTime: string) => {
+  showCountdown.value = true
+  
+  const updateCountdown = () => {
+    const now = new Date()
+    // 转换为印度时间
+    const indiaTime = new Date(now.getTime())
+    const expireDate = new Date(expireTime)
+    const diff = expireDate.getTime() - indiaTime.getTime()
+    
+    if (diff <= 0) {
+      handleTimeout()
+      return
+    }
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+    
+    countdownTime.value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }
+  
+  updateCountdown()
+  countdownTimer.value = setInterval(updateCountdown, 1000) as any
+}
+
+const handleTimeout = () => {
+}
+
+const handleError = (message: string) => {
+  console.error(message)
+  window.location.href = `${import.meta.env.VITE_APP_BASE_URL}/error.html`
+}
 
 const selectPaymentMethod = (methodId: string) => {
   selectedMethod.value = methodId
@@ -156,11 +281,18 @@ const confirmFinish = async () => {
 onMounted(() => {
   // 初始化默认选中第一个支付方式
   selectedMethod.value = 'paytm'
+  // 获取订单信息
+  fetchOrderInfo()
 })
 
 onUnmounted(() => {
   // 组件卸载时恢复body滚动
   document.body.style.overflow = 'auto'
+  // 清除定时器
+  if (countdownTimer.value) {
+    clearInterval(countdownTimer.value)
+    countdownTimer.value = null
+  }
 })
 </script>
 
@@ -198,6 +330,14 @@ onUnmounted(() => {
 .amount {
   font-size: 42px;
   font-weight: 800;
+}
+
+.countdown-timer {
+  font-size: 18px;
+  color: #ff4757;
+  font-weight: 700;
+  margin-top: 8px;
+  text-align: center;
 }
 
 .content {
@@ -339,6 +479,24 @@ onUnmounted(() => {
   font-size: 16px;
   line-height: 1.6;
   color: #555;
+  margin-bottom: 15px;
+}
+
+.order-info {
+  background: #f8f9ff;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.order-info div {
+  margin-bottom: 5px;
+}
+
+.order-info strong {
+  color: #305ac2;
 }
 
 /* 弹窗样式 */

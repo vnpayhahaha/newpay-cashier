@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Success</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet" />
+    <style>
+      .error {
+        width: 6rem;
+        height: 6rem;
+        border-radius: 50%;
+        display: block;
+        stroke-width: 2;
+        stroke: #fff;
+        stroke-miterlimit: 10;
+        margin: 20px auto;
+        box-shadow: inset 0px 0px 0px #e74c3c;
+        animation: fill-red 0.5s ease-in-out 0.5s forwards, scale 0.3s ease-in-out 0.7s both;
+      }
+      .error .circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 2;
+        stroke-miterlimit: 10;
+        stroke: #e74c3c;
+        fill: none;
+        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+      }
+      .error .line {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: stroke 0.7s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+      }
+      .error .line:nth-child(1) {
+        animation-delay: 1s;
+      }
+      .error .line:nth-child(2) {
+        animation-delay: 0.7s;
+      }
+      @keyframes stroke {
+        100% {
+          stroke-dashoffset: 0;
+        }
+      }
+      @keyframes scale {
+        0%,
+        100% {
+          transform: none;
+        }
+        50% {
+          transform: scale3d(1.2, 1.2, 1);
+        }
+        80% {
+          transform: scale3d(0.8, 0.8, 1);
+        }
+      }
+      @keyframes fill-red {
+        100% {
+          box-shadow: inset 0px 0px 0px 3rem #e74c3c;
+        }
+      }
+      .success-text {
+        font-size: 2rem;
+        text-align: center;
+        font-family: Space Grotesk;
+        font-weight: 600;
+      }
+
+      .success-subtext {
+        font-size: 1rem;
+        text-align: center;
+      }
+      .retbtn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+      }
+      .footerStyle {
+        position: fixed;
+        bottom: 1rem;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.8rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="mt-5">
+        <svg class="error" xmlns="https://www.w3.org/2000/svg" viewBox="0 0 52 52">
+          <circle class="circle" cx="26" cy="26" r="25" fill="none" />
+          <path class="line" fill="none" d="M17.36,34.736l17.368-17.472" />
+          <path class="line" fill="none" d="M34.78,34.684L17.309,17.316" />
+        </svg>
+      </div>
+      <div class="success-text mt-4">Payment Timeout</div>
+      <div class="success-subtext mt-2">The order has timed out and is now invalid. Please initiate the payment again.</div>
+      <div class="retbtn mt-3">
+        <button class="btn btn-primary btn-sm" onclick="returnapp()">Close</button>
+      </div>
+    </div>
+
+    <div class="footerStyle mt-2">
+      <svg
+        viewBox="64 64 896 896"
+        data-icon="safety-certificate"
+        width="1em"
+        height="1em"
+        fill="currentColor"
+        aria-hidden="true"
+        focusable="false"
+        class=""
+        style="font-size: 1rem; color: rgb(82, 196, 26)"
+      >
+        <path
+          data-v-3dbfa5e8=""
+          d="M866.9 169.9L527.1 54.1C523 52.7 517.5 52 512 52s-11 .7-15.1 2.1L157.1 169.9c-8.3 2.8-15.1 12.4-15.1 21.2v482.4c0 8.8 5.7 20.4 12.6 25.9L499.3 968c3.5 2.7 8 4.1 12.6 4.1s9.2-1.4 12.6-4.1l344.7-268.6c6.9-5.4 12.6-17 12.6-25.9V191.1c.2-8.8-6.6-18.3-14.9-21.2zM810 654.3L512 886.5 214 654.3V226.7l298-101.6 298 101.6v427.6zm-405.8-201c-3-4.1-7.8-6.6-13-6.6H336c-6.5 0-10.3 7.4-6.5 12.7l126.4 174a16.1 16.1 0 0 0 26 0l212.6-292.7c3.8-5.3 0-12.7-6.5-12.7h-55.2c-5.1 0-10 2.5-13 6.6L468.9 542.4l-64.7-89.1z"
+        ></path>
+      </svg>
+      100% Secure Payments Powered by UPI.
+    </div>
+
+    <script src="assets/js/jquery-1.12.4.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
+    <script>
+      queryString = window.location.search;
+      let callbackurl = queryString.substring(1);
+      console.log(callbackurl);
+      function returnapp() {
+        console.log(callbackurl);
+        // window.location.href = callbackurl;
+		closeWin()
+
+      }
+	  function closeWin(){
+	      if(navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") != -1){
+	          window.location.href = "about:blank";
+	          window.close();
+	      }else{
+	          window.opener = null;
+	          window.open("", "_self");
+	          window.close();
+	      }
+	  }
+    </script>
+  </body>
+</html>

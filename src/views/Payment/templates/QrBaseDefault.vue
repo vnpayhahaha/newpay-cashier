@@ -8,7 +8,10 @@
     <div class="content">
       <div class="amount-label">The amount you need to Pay</div>
       <div class="amount-display">
-        <div class="value">₹{{ orderData?.amount || 0 }}</div>
+        <div class="countdown-timer" v-if="showCountdown && countdownTime">
+          {{ countdownTime }}
+        </div>
+        <div class="value">₹{{ apiOrderData?.amount || orderData?.amount || 0 }}</div>
       </div>
 
       <div class="instruction">Use mobile scan code to pay</div>
@@ -49,6 +52,12 @@
     <div class="bottom">
       <div class="title">Payment prompt:</div>
       <div class="description">Please select the payment method you need and make sure your phone has the corresponding wallet software installed. After payment, you may need to enter the UTR number for verification.</div>
+      <div v-if="apiOrderData" class="order-info">
+        <div><strong>Order:</strong> {{ apiOrderData.out_order_number }}</div>
+        <div><strong>Account:</strong> {{ apiOrderData.account }}</div>
+        <div v-if="apiOrderData.bank"><strong>Bank:</strong> {{ apiOrderData.bank }}</div>
+        <div v-if="apiOrderData.name"><strong>Name:</strong> {{ apiOrderData.name }}</div>
+      </div>
     </div>
     
     <!-- 弹窗结构 -->
@@ -60,7 +69,7 @@
         <img class="modal-qr" :src="qrCodeUrl" alt="Paytm QR Code">
         
         <button class="modal-button" @click="downloadQRCode">
-           Save QR Code and Pay ₹{{ orderData?.amount || 0 }}
+           Save QR Code and Pay ₹{{ apiOrderData?.amount || orderData?.amount || 0 }}
         </button>
         
         <div class="modal-footer">How to find the UTR?</div>
@@ -79,7 +88,7 @@
         <img class="modal-qr" :src="qrCodeUrl" alt="PhonePe QR Code">
 
         <button class="modal-button" @click="downloadQRCode">
-           Save QR Code and Pay ₹{{ orderData?.amount || 0 }}
+           Save QR Code and Pay ₹{{ apiOrderData?.amount || orderData?.amount || 0 }}
         </button>
         
         <div class="modal-footer">How to find the UTR?</div>
@@ -87,6 +96,14 @@
         <button class="modal-button" @click="submitPayment">
            Submit Payment
         </button>
+      </div>
+    </div>
+    
+    <!-- 支付成功弹窗 -->
+    <div v-if="showSuccessModal" class="modal" @click.self="closeModal">
+      <div class="modal-content">
+        <h3>支付成功！</h3>
+        <p>{{ successRedirectTime }} 秒后将自动跳转</p>
       </div>
     </div>
     
@@ -100,6 +117,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import type { OrderInfo } from '@/types/order'
 
 interface Props {
@@ -107,6 +125,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const route = useRoute()
 
 const selectedMethod = ref('paytm')
 const showModal = ref(false)
@@ -115,6 +134,115 @@ const showDownloadStatus = ref(false)
 const downloadSuccess = ref(false)
 const downloadMessage = ref('')
 const qrCodeUrl = ref('https://img1.baidu.com/it/u=2172818577,3783888802&fm=253&app=138&f=JPEG?w=800&h=1422')
+const apiOrderData = ref<any | null>(null)
+const isLoading = ref(true)
+const countdownTimer = ref<number | null>(null)
+const countdownTime = ref('')
+const showCountdown = ref(false)
+const showSuccessModal = ref(false)
+const successRedirectTime = ref(5)
+
+const fetchOrderInfo = async () => {
+  try {
+    const orderId = route.params.orderId as string
+    if (!orderId) {
+      handleError('订单ID不存在')
+      return
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_APP_API_URL}/v1/common/collection/query_order?platform_order_no=${orderId}`)
+    const result = await response.json()
+    
+    if (result.success && result.data) {
+      apiOrderData.value = result.data
+      handleOrderStatus(result.data)
+    } else {
+      handleError('查询订单失败')
+    }
+  } catch (error) {
+    console.error('Failed to fetch order info:', error)
+    handleError('网络错误')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleOrderStatus = (orderData: any) => {
+  const status = orderData.status
+  
+  switch (status) {
+    case 20: // 已支付成功
+      handlePaymentSuccess(orderData)
+      break
+    case 10: // 待支付
+      startCountdown(orderData.expire_time)
+      break
+    case 40: // 支付失败
+    case 41: // 已取消
+    case 44: // 已退款
+      handleError('订单状态异常')
+      break
+    case 43: // 已失效
+      handleTimeout()
+      break
+    default:
+      handleError('未知订单状态')
+  }
+}
+
+const handlePaymentSuccess = (orderData: any) => {
+  if (orderData.return_url) {
+    showSuccessModal.value = true
+    startSuccessCountdown(orderData.return_url)
+  } else {
+    window.location.href = `${import.meta.env.VITE_APP_BASE_URL}/success.html`
+  }
+}
+
+const startSuccessCountdown = (returnUrl: string) => {
+  const timer = setInterval(() => {
+    successRedirectTime.value--
+    if (successRedirectTime.value <= 0) {
+      clearInterval(timer)
+      window.location.href = returnUrl
+    }
+  }, 1000)
+}
+
+const startCountdown = (expireTime: string) => {
+  showCountdown.value = true
+  
+  const updateCountdown = () => {
+    const now = new Date()
+    // 转换为印度时间
+    const indiaTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000))
+    const expireDate = new Date(expireTime)
+    const diff = expireDate.getTime() - indiaTime.getTime()
+    
+    if (diff <= 0) {
+      handleTimeout()
+      return
+    }
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+    
+    countdownTime.value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }
+  
+  updateCountdown()
+  countdownTimer.value = setInterval(updateCountdown, 1000) as any
+}
+
+const handleTimeout = () => {
+  window.location.href = `${import.meta.env.VITE_APP_BASE_URL}/timeout.html`
+}
+
+const handleError = (message: string) => {
+  console.error(message)
+  window.location.href = `${import.meta.env.VITE_APP_BASE_URL}/error.html`
+}
 
 const selectPaymentMethod = (method: string) => {
   selectedMethod.value = method
@@ -193,7 +321,7 @@ const submitPayment = async () => {
       }
       if (result.code === 0) {
         alert(result.msg)
-        closeModal() // 关闭弹窗并恢复滚动
+        closeModal() 
         setTimeout(() => {
           window.location.reload()
         }, 2000)
@@ -207,11 +335,18 @@ const submitPayment = async () => {
 onMounted(() => {
   // 初始化第一个选项为选中状态
   selectedMethod.value = 'paytm'
+  // 获取订单信息
+  fetchOrderInfo()
 })
 
 onUnmounted(() => {
   // 组件卸载时恢复body滚动
   document.body.style.overflow = 'auto'
+  // 清除定时器
+  if (countdownTimer.value) {
+    clearInterval(countdownTimer.value)
+    countdownTimer.value = null
+  }
 })
 </script>
 
@@ -282,6 +417,14 @@ onUnmounted(() => {
   color: #305ac2;
   font-weight: 800;
   justify-content: center;
+}
+
+.countdown-timer {
+  font-size: 24px;
+  color: #ff4757;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
 }
 
 .instruction {
@@ -445,6 +588,24 @@ onUnmounted(() => {
   font-size: 16px;
   line-height: 1.6;
   color: #555;
+  margin-bottom: 15px;
+}
+
+.order-info {
+  background: #f8f9ff;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.order-info div {
+  margin-bottom: 5px;
+}
+
+.order-info strong {
+  color: #305ac2;
 }
 
 /* 弹窗样式 */
