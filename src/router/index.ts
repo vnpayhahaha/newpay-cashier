@@ -3,6 +3,10 @@ import PaymentPage from "../views/Payment/index.vue";
 
 const routes = [
   {
+    path: "/",
+    redirect: "/payment/QrBaseDefault/demo123"
+  },
+  {
     path: "/payment/:template/:orderId",
     name: "Payment",
     component: PaymentPage,

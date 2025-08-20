@@ -1,0 +1,421 @@
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f8f9 0%, #e6f0ff 100%);
+            min-height: 100vh;
+            padding-bottom: 20px;
+        }
+        
+        .container {
+            /* max-width: 800px; */
+            margin: 0 auto;
+            /* padding: 0 15px; */
+        }
+        
+        .header {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            letter-spacing: .4px;
+            font-weight: 700;
+            color: #fff;
+            padding: 25px 20px;
+            background: linear-gradient(90deg, #305ac2 0%, #1a3a9c 100%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            /* border-radius: 0 0 20px 20px; */
+            position: relative;
+            z-index: 10;
+            border: 0;
+        }
+        
+        .header .title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .header .amount {
+            font-size: 42px;
+            font-weight: 800;
+        }
+        
+        .content {
+            background: #fff;
+            box-shadow: 0 6px 20px 0 hsla(0, 0%, 72.9%, 0.3);
+            border-radius: 12px;
+            margin: -30px auto 0;
+            padding: 30px 25px;
+            position: relative;
+            z-index: 15;
+            width: 90%;
+        }
+        
+        .payment-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0 0 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f4ff;
+        }
+        
+        .payment-options {
+            display: grid;
+            /* grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); */
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .option-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid #e0e7ff;
+            /* background: #f9fbff; */
+            cursor: pointer;
+        }
+        
+        .option-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(48, 90, 194, 0.15);
+            border-color: #a0b8ff;
+        }
+        
+        .option-item.selected {
+            background: #edf2ff;
+            border-color: #305ac2;
+        }
+        
+        .option-content {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .option-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f8f9 0%, #e6f0ff 100%);
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .option-icon img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .option-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .option-radio {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #305ac2;
+        }
+        
+        .submit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: linear-gradient(90deg, #305ac2 0%, #4286f4 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px auto 0;
+            font-weight: 600;
+            width: 100%;
+            max-width: 300px;
+            height: 55px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(48, 90, 194, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(48, 90, 194, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .bottom {
+            /* background: #fff; */
+            box-shadow: 0 6px 20px 0 hsla(0, 0%, 72.9%, 0.2);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px auto 0;
+        }
+        
+        .bottom .title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #305ac2;
+            margin-bottom: 15px;
+        }
+        
+        .bottom .description {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(3px);
+            overflow: auto;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.show {
+            display: block;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            border-radius: 15px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #888;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .close-btn:hover {
+            color: #ff4757;
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: #f0f5ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-logo img {
+            max-width: 80%;
+            max-height: 80%;
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #305ac2;
+        }
+        
+        .modal-text {
+            font-size: 17px;
+            margin-bottom: 20px;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .qrcode-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .modal-qr {
+            width: 200px;
+            height: 200px;
+            border: 1px solid #e0e7ff;
+            border-radius: 12px;
+            padding: 15px;
+            background: #f9fbff;
+            margin-bottom: 15px;
+        }
+        
+        .qr-text {
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+            max-width: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-input-container {
+            margin: 20px 0;
+        }
+        
+        .input-label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .modal-input {
+            width: 100%;
+            height: 50px;
+            background: #f6f6f6;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            padding: 0 15px;
+            font-size: 17px;
+            font-weight: 500;
+            outline: none;
+            transition: border 0.3s;
+        }
+        
+        .modal-input:focus {
+            border: 2px solid #305ac2;
+            background: #fff;
+        }
+        
+        .modal-footer {
+            text-align: right;
+            color: #1c2aff;
+            font-size: 14px;
+            margin: 5px 0 15px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .modal-button {
+            background: linear-gradient(90deg, #00b578 0%, #00cc88 100%);
+            width: 100%;
+            height: 55px;
+            border-radius: 10px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            border: 0;
+            cursor: pointer;
+            margin: 20px 0 10px;
+            box-shadow: 0 4px 15px rgba(0, 181, 120, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 181, 120, 0.4);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .payment-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header .title {
+                font-size: 20px;
+            }
+            
+            .header .amount {
+                font-size: 36px;
+            }
+            
+            .content {
+                padding: 25px 20px;
+            }
+            
+            .option-name {
+                font-size: 17px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .option-item {
+                padding: 10px 12px;
+            }
+            
+            .option-icon {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .modal-content {
+                padding: 20px 15px;
+            }
+            
+            .modal-title {
+                font-size: 20px;
+            }
+            
+            .modal-text {
+                font-size: 16px;
+            }
+        }

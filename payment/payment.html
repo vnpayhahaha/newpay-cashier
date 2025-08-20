@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Payment</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="static/css/back.css">
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img class="logo" src="static/img/upi_white.png" alt="UPI Logo">
+
+            <div class="title">India Payment</div>
+        </div>
+        
+        <div class="content">
+            <div class="amount-label">The amount you need to Pay</div>
+            <div class="amount-display">
+                <div class="value" id="money">₹850.00</div>
+            </div>
+
+            <div class="instruction">Use mobile scan code to pay</div>
+            <div class="qrcode-container">
+                <img class="qrcode" id="qrcodeImage" src='' alt="Payment QR Code">
+            </div>
+
+            <button class="scan-button" id="downloadBtn">
+                 Download / Scan QR Code
+            </button>
+
+            <div class="payment-title">Select an option to pay (UPI)</div>
+            
+            <div class="payment-options">
+                <div class="option-item">
+                    <div class="option-content">
+                        <div class="option-icon">
+                            <img src='static/img/paytm.svg' alt="Paytm Logo">
+                        </div>
+                        <div class="option-name">Paytm</div>
+                    </div>
+                    <input type="radio" name="payment" class="option-radio paytmBtn">
+                </div>
+            </div>
+            <div class="payment-options">
+                <div class="option-item">
+                    <div class="option-content">
+                        <div class="option-icon">
+                            <img src='static/img/phonepe.png' alt="PhonePe Logo">
+                        </div>
+                        <div class="option-name">PhonePe</div>
+                    </div>
+                    <input type="radio" name="payment" class="option-radio phonepe-btn">
+                </div>
+            </div>
+        </div>
+        <div class="bottom">
+            <div class="title">Payment prompt:</div>
+            <div class="description">Please select the payment method you need and make sure your phone has the corresponding wallet software installed. After payment, you may need to enter the UTR number for verification.</div>
+        </div>
+        
+        <!-- 弹窗结构 -->
+        <div id="paytm-modal" class="modal">
+            <div class="modal-content">
+                <span class="paytm-close-btn" style="position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #888;
+            cursor: pointer;
+            transition: color 0.2s;">&times;</span>
+                <h3>Attention</h3>
+                <p>PhonePe only supports scanning QR codes for payment</p>
+                <img class="modal-qr" id="paytm-qrcode" src="static/qrcode.png" alt="PhonePe QR Code">
+
+                
+                <button class="modal-button" id="modalDownloadBtn">
+                     Save QR Code and Pay ₹850.00
+                </button>
+                
+                <div class="modal-footer">How to find the UTR?</div>
+                <input type="text" class="modal-input" id="paytmUtr" placeholder="UTR / UPI Ref No / UPI Transaction ID">
+                <button class="modal-button" onclick="paytmPay('paytm-modal')">
+
+
+                     Submit Payment
+                </button>
+            </div>
+        </div>
+        <div id="phonepe-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h3>Attention</h3>
+                <p>PhonePe only supports scanning QR codes for payment</p>
+                <img class="modal-qr" id="phonepe-qrcode" src="static/qrcode.png" alt="PhonePe QR Code">
+
+                <button class="modal-button" id="modalDownloadBtntwo">
+                     Save QR Code and Pay ₹850.00
+                </button>
+                
+                <div class="modal-footer">How to find the UTR?</div>
+                <input type="text" class="modal-input" id="phonepeUtr" placeholder="UTR / UPI Ref No / UPI Transaction ID">
+                <button class="modal-button" onclick="paytmPay('phonepe-modal')">
+
+                     Submit Payment
+                </button>
+            </div>
+        </div>
+        
+        <!-- 下载状态提示 -->
+        <div class="download-status" id="downloadStatus">
+            <i class="fas fa-check-circle"></i>
+            <span>QR Code downloaded successfully!</span>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function (){
+            const url = 'https://test.tommin.cn/api/test/order_info';
+            const data_url=window.location.href;
+            const dd = data_url.split('=')[1];
+            // if(!dd){
+            //     window.location.href='./index_error.html';
+            // }
+            const data = {
+                out_order_number: dd
+            };
+            // document.getElementById('order_id').innerHTML='Order ID:'+dd;
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                console.log(xhr)
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    var data = JSON.parse(xhr.response)
+                    document.getElementById('money').innerHTML='<em>₹</em> '+ data.data.amount;
+                    document.getElementById('qrcodeImage').src='https://img1.baidu.com/it/u=2172818577,3783888802&fm=253&app=138&f=JPEG?w=800&h=1422';
+                }
+            };
+            xhr.onerror = function() {
+                console.error('Network error');
+            };
+            xhr.send(JSON.stringify(data));
+
+        }
+
+
+        // 获取元素
+        const phonepeBtn = document.querySelector('.phonepe-btn');
+        const paytmBtn = document.querySelector('.paytmBtn');
+
+        const modal = document.getElementById('phonepe-modal');
+        const paytmModal = document.getElementById('paytm-modal');
+
+        const closeBtn = document.querySelector('.close-btn');
+        const paytmCloseBtn = document.querySelector('.paytm-close-btn');
+
+        const downloadBtn = document.getElementById('downloadBtn');
+        const paytmDownloadBtn = document.getElementById('modalDownloadBtntwo');
+
+        const modalDownloadBtn = document.getElementById('modalDownloadBtn');
+        const paytmModalDownloadBtn = document.getElementById('modalDownloadBtntwo');
+
+
+        const qrcodeImage = document.getElementById('qrcodeImage');
+        const paytmQrcodeImage = document.getElementById('paytm-qrcode');
+
+        const downloadStatus = document.getElementById('downloadStatus');
+        const paytmDownloadStatus = document.getElementById('paytm-downloadStatus');
+
+
+        // 显示下载状态提示
+        function showStatus(message, isSuccess) {
+            const icon = downloadStatus.querySelector('i');
+            const text = downloadStatus.querySelector('span');
+            
+            text.textContent = message;
+            downloadStatus.className = 'download-status';
+            downloadStatus.classList.add(isSuccess ? 'success' : 'error');
+            icon.className = isSuccess ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            
+            downloadStatus.classList.add('show');
+            
+            setTimeout(() => {
+                downloadStatus.classList.remove('show');
+            }, 3000);
+        }
+
+        // 下载二维码功能
+        function downloadQRCode() {
+            // 显示加载状态
+            downloadStatus.innerHTML = '<div class="spinner"></div><span>Downloading QR Code...</span>';
+            downloadStatus.className = 'download-status';
+            downloadStatus.classList.add('show');
+            
+            try {
+                const qrCodeUrl = qrcodeImage.src;
+                
+                // 使用fetch获取图片
+                fetch(qrCodeUrl)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        // 创建下载链接
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'payment-qrcode.png';
+                        document.body.appendChild(a);
+                        a.click();
+                        
+                        // 清理
+                        setTimeout(() => {
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                            
+                            // 显示成功消息
+                            showStatus('QR Code downloaded successfully!', true);
+                        }, 100);
+                    })
+                    .catch(error => {
+                        console.error('Error downloading QR code:', error);
+                        showStatus('Error downloading QR code. Please try again.', false);
+                    });
+            } catch (error) {
+                console.error('Error downloading QR code:', error);
+                showStatus('Error downloading QR code. Please try again.', false);
+            }
+        }
+
+        // 点击按钮显示弹窗
+        phonepeBtn.addEventListener('click', function() {
+            modal.classList.add('show');
+            const url = document.getElementById('qrcodeImage').src;
+            const qrcode = document.getElementById('phonepe-qrcode');
+            qrcode.src = url;
+            const amount = document.getElementById('money').innerHTML;
+            const phonepeAmount = document.getElementById('modalDownloadBtntwo');
+            phonepeAmount.innerHTML = 'Save QR Code and Pay '+amount;
+
+
+        });
+        paytmBtn.addEventListener('click', function() {
+            paytmModal.classList.add('show');
+            const url = document.getElementById('qrcodeImage').src;
+            const amount = document.getElementById('money').innerHTML;
+            const qrcode = document.getElementById('paytm-qrcode');
+            qrcode.src = url;
+            const paytmAmount = document.getElementById('modalDownloadBtn');
+            paytmAmount.innerHTML = 'Save QR Code and Pay '+amount;
+
+
+        });
+
+        // 点击关闭按钮隐藏弹窗
+        closeBtn.addEventListener('click', function() {
+            modal.classList.remove('show');
+        });
+        paytmCloseBtn.addEventListener('click', function() {
+
+            paytmModal.classList.remove('show');
+        });
+
+
+        // 点击弹窗外部区域隐藏弹窗
+        window.addEventListener('click', function(event) {
+            if (event.target == modal) {
+                modal.classList.remove('show');
+            }
+            if (event.target == paytmModal) {
+                paytmModal.classList.remove('show');
+            }
+        });
+
+        // 主下载按钮事件
+        downloadBtn.addEventListener('click', downloadQRCode);
+        paytmDownloadBtn.addEventListener('click', downloadQRCode);
+
+        
+        // 弹窗内的下载按钮事件
+        modalDownloadBtn.addEventListener('click', function() {
+            downloadQRCode();
+            modal.classList.remove('show');
+        });
+
+        // 添加radio选择效果
+        const radios = document.querySelectorAll('.option-radio');
+        radios.forEach(radio => {
+            radio.addEventListener('click', function() {
+                // 移除所有选中状态
+                radios.forEach(r => {
+                    r.closest('.option-item').style.background = 'transparent';
+                });
+                
+                // 设置当前选中状态
+                if (this.checked) {
+                    this.closest('.option-item').style.background = '#edf2ff';
+                }
+            });
+        });
+        function paytmPay(modal) {
+            const paytmModal = document.getElementById(modal);
+            const paytmUtr = document.getElementById('paytmUtr').value;
+            const phonepeUtr = document.getElementById('phonepeUtr').value;
+            var utr = '';
+
+           if(modal == 'paytm-modal') {
+                 utr = paytmUtr;
+           }
+           if(modal == 'phonepe-modal') {
+                 utr = phonepeUtr;
+           }
+           alert(utr);
+            const data_url=window.location.href;
+            const dd = data_url.split('=')[1];
+            const data = {
+                out_order_number: dd,
+                utr:utr,
+                type:modal
+            };
+            const url = "https://api.tzpay.cloud/web/transaction";
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    var data = JSON.parse(xhr.response)
+                    if(data){
+                        if(data.code===-1){
+                            notify.alert(3, data.msg, 2);
+                        }
+                        if(data.code===0){
+                            notify.alert(1, data.msg, 2);
+                            setTimeout(function(){
+                                window.location.reload();
+                            },2000)
+                        }
+                    }
+                }
+            };
+            xhr.onerror = function() {
+                console.error('Network error');
+            };
+            xhr.send(JSON.stringify(data));
+        }
+        // 初始化第一个选项为选中状态
+        if (radios.length > 0) {
+            radios[0].checked = true;
+            radios[0].closest('.option-item').style.background = '#edf2ff';
+        }
+    </script>
+</body>
+</html>

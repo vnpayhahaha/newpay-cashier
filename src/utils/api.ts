@@ -1,3 +1,5 @@
+import type { OrderInfo } from '@/types/order'
+
 export const api = {
   getOrderDetail: (orderId: string) => {
     return new Promise<{ data: OrderInfo }>((resolve) => {

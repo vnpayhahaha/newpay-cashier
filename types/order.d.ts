@@ -1,4 +1,4 @@
-declare interface OrderInfo {
+export interface OrderInfo {
   orderId: string;
   amount: number;
   status: string;

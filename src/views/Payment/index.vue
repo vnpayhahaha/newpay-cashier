@@ -9,24 +9,25 @@ import { api } from "../../utils/api";
 const route = useRoute();
 const orderInfo = ref<OrderInfo | null>(null);
 // 定义有效的模板名称类型
-type TemplateName = "qrBaseDefault" | "qrBasePPAndPTM";
+type TemplateName = "QrBaseDefault" | "QrBasePPAndPTM";
 // 类型安全的模板组件映射
 const templateComponents: Record<TemplateName, Component> = {
-  qrBaseDefault: QrBaseDefault,
-  qrBasePPAndPTM: QrBasePPAndPTM,
+  QrBaseDefault: QrBaseDefault,
+  QrBasePPAndPTM: QrBasePPAndPTM,
 };
 
 // 类型安全的模板名称计算属性
 const templateName = computed<TemplateName>(() => {
-  console.log(route.params.template);
+  console.log('Current template param:', route.params.template);
   // 确保路由参数是字符串类型
   const name = Array.isArray(route.params.template)
     ? route.params.template[0]
     : route.params.template;
 
-  // 验证模板名称有效性
-  if (!(name in templateComponents)) {
-    throw new Error(`Invalid template name: ${name}`);
+  // 验证模板名称有效性，如果无效则使用默认模板
+  if (!name || !(name in templateComponents)) {
+    console.warn(`Invalid or missing template name: ${name}, using default QrBaseDefault`);
+    return "QrBaseDefault";
   }
 
   return name as TemplateName;

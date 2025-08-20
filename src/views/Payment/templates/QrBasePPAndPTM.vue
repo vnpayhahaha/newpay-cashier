@@ -1,247 +1,550 @@
 <template>
-  <div class="payment-container">
-    <!-- 金额卡片 -->
-    <div class="amount-card">
-      <div class="amount-label">Amount</div>
-      <div class="amount-value">₹100</div>
+  <div class="container">
+    <div class="header">
+      <div class="title">Payment Amount</div>
+      <div class="amount">₹{{ orderData?.amount || 100 }}</div>
     </div>
-
-    <!-- 支付卡片（整合标题、选项和按钮） -->
-    <div class="payment-card">
-      <!-- 支付标题 -->
-      <div class="payment-header">Choose Your Payment</div>
-
-      <!-- 支付选项 -->
+    
+    <div class="content">
+      <div class="payment-title">Choose Your Payment Method</div>
       <div class="payment-options">
-        <div
-          v-for="method in paymentMethods"
+        <div 
+          v-for="method in paymentMethods" 
           :key="method.id"
-          class="payment-method"
-          :class="{ active: selectedMethod === method.id }"
-          @click="selectedMethod = method.id"
+          class="option-item" 
+          :class="{ selected: selectedMethod === method.id }"
+          :data-method="method.id"
+          @click="selectPaymentMethod(method.id)"
         >
-          <div class="method-left">
-            <div class="method-icon">
-              <!-- 这里预留图标位置 -->
-              <img v-if="method.icon" :src="method.icon" alt="" />
+          <div class="option-content">
+            <div class="option-icon">
+              <img :src="method.icon" :alt="method.name + ' Logo'">
             </div>
-            <div class="method-name">
-              {{ method.name }}
-              <span v-if="method.id === 'paytm'" class="hindi-text">पे</span>
-            </div>
+            <div class="option-name">{{ method.name }}</div>
           </div>
-          <div class="radio-indicator">
-            <div class="radio-inner" v-if="selectedMethod === method.id"></div>
-          </div>
+          <input type="radio" name="payment" class="option-radio" v-model="selectedMethod" :value="method.id">
         </div>
       </div>
-
-      <!-- 支付按钮 -->
-      <button class="pay-button">Pay ₹100</button>
-
-      <!-- 提示文字 -->
-      <div class="payment-note">
-        Please select the payment method you need and make sure your phone has
-        the corresponding wallet software installed
+      
+      <button class="submit-btn" @click="showPaymentModal">
+        Submit Payment
+      </button>
+    </div>
+    
+    <div class="bottom">
+      <div class="title">Payment Instructions</div>
+      <div class="description">
+        Please select the payment method you need and make sure your phone has the corresponding wallet software installed. 
+        After payment, you may need to enter the UTR number for verification. UTR (Unique Transaction Reference) is a 12-digit 
+        number generated for every transaction which helps in tracking the payment.
+      </div>
+    </div>
+    
+    <!-- 弹窗结构 -->
+    <div class="modal" :class="{ show: showModal }" @click.self="closeModal">
+      <div class="modal-content">
+        <span class="close-btn" @click="closeModal">&times;</span>
+        <p class="modal-text">Warning: After payment, return to enter the UTR</p>
+        
+        <div class="qrcode-container">
+          <img class="modal-qr" :src="currentQrCode" :alt="selectedMethodName + ' QR Code'">
+          <p class="qr-text">Open {{ selectedMethodName }} App > Scan QR Code > Confirm Payment</p>
+        </div>
+        
+        <div class="modal-input-container">
+          <label class="input-label">Enter UTR Number (After Payment)</label>
+          <input type="text" class="modal-input" v-model="utrNumber" placeholder="12-digit UTR number">
+        </div>
+        
+        <div class="modal-footer">How to find the UTR?</div>
+        
+        <button class="modal-button" @click="confirmFinish">
+          <i class="fas fa-check-circle"></i> Submit Payment
+        </button>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from "vue";
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import type { OrderInfo } from '@/types/order'
 
-export default defineComponent({
-  name: "PaymentPage",
-  setup() {
-    const selectedMethod = ref("paytm");
-    const paymentMethods = [
-      { id: "paytm", name: "Paytm", icon: "" },
-      { id: "phonepe", name: "PhonePe", icon: "" },
-      { id: "googlepay", name: "Google Pay", icon: "" },
-      { id: "bhim", name: "BHIM", icon: "" },
-      { id: "amazonpay", name: "Amazon Pay", icon: "" },
-      { id: "other", name: "Other options", icon: "" },
-    ];
+interface Props {
+  orderData: OrderInfo
+}
 
-    return { selectedMethod, paymentMethods };
-  },
-});
+const props = defineProps<Props>()
+
+const selectedMethod = ref('paytm')
+const showModal = ref(false)
+const utrNumber = ref('')
+
+const paymentMethods = [
+  { id: 'paytm', name: 'Paytm', icon: '/static/img/paytm.svg' },
+  { id: 'phonepe', name: 'PhonePe', icon: '/static/img/phonepe.png' },
+  { id: 'gpay', name: 'Google Pay', icon: '/static/img/gpay.png' },
+  { id: 'bhim', name: 'BHIM', icon: '/static/img/bhim.svg' },
+  { id: 'amazonpay', name: 'Amazon Pay', icon: '/static/img/amazonpay.svg' },
+  { id: 'other', name: 'Other options', icon: '/static/img/other.svg' }
+]
+
+const selectedMethodName = computed(() => {
+  const method = paymentMethods.find(m => m.id === selectedMethod.value)
+  return method ? method.name : 'Payment'
+})
+
+const currentQrCode = computed(() => {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${selectedMethodName.value}:${props.orderData?.amount || 100}`
+})
+
+const selectPaymentMethod = (methodId: string) => {
+  selectedMethod.value = methodId
+}
+
+const showPaymentModal = () => {
+  showModal.value = true
+  // 防止背景滚动
+  document.body.style.overflow = 'hidden'
+}
+
+const closeModal = () => {
+  showModal.value = false
+  utrNumber.value = ''
+  // 恢复背景滚动
+  document.body.style.overflow = 'auto'
+}
+
+const confirmFinish = async () => {
+  if (!utrNumber.value) {
+    alert('请输入UTR')
+    return
+  }
+  
+  try {
+    const data = {
+      out_order_number: props.orderData.orderId,
+      utr: utrNumber.value
+    }
+    
+    const response = await fetch('https://api.tzpay.cloud/web/transaction', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    
+    const result = await response.json()
+    if (result) {
+      if (result.code === -1) {
+        alert(result.msg)
+      }
+      if (result.code === 0) {
+        alert(result.msg)
+        closeModal() // 关闭弹窗并恢复滚动
+        setTimeout(() => {
+          window.location.reload()
+        }, 2000)
+      }
+    }
+  } catch (error) {
+    console.error('Network error:', error)
+  }
+}
+
+onMounted(() => {
+  // 初始化默认选中第一个支付方式
+  selectedMethod.value = 'paytm'
+})
+
+onUnmounted(() => {
+  // 组件卸载时恢复body滚动
+  document.body.style.overflow = 'auto'
+})
 </script>
 
 <style scoped>
-/* 基础样式 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+.container {
+  margin: 0 auto;
+  background: linear-gradient(135deg, #f5f8f9 0%, #e6f0ff 100%);
+  min-height: 100vh;
+  padding-bottom: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.payment-container {
-  max-width: 100%;
-
-  margin: 0 auto;
-  padding: 120px;
-  background: #f8f8f8;
-  min-height: 100vh;
+.header {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  letter-spacing: .4px;
+  font-weight: 700;
+  color: #fff;
+  padding: 25px 20px;
+  background: linear-gradient(90deg, #305ac2 0%, #1a3a9c 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10;
+  border: 0;
 }
 
-/* 金额卡片 */
-.amount-card {
-  background: white;
+.title {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.amount {
+  font-size: 42px;
+  font-weight: 800;
+}
+
+.content {
+  background: #fff;
+  box-shadow: 0 6px 20px 0 hsla(0, 0%, 72.9%, 0.3);
   border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin: -30px auto 0;
+  padding: 30px 25px;
+  position: relative;
+  z-index: 15;
+  width: 90%;
+}
+
+.payment-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f4ff;
   text-align: center;
 }
 
-.amount-label {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 5px;
-}
-
-.amount-value {
-  font-size: 32px;
-  font-weight: 600;
-  color: #000;
-}
-
-/* 支付卡片（整合所有元素） */
-.payment-card {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-/* 支付方式标题 */
-.payment-header {
-  font-size: 18px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 16px;
-  padding-left: 8px;
-}
-
-/* 支付选项 */
 .payment-options {
-  margin-bottom: 16px;
+  display: grid;
+  gap: 15px;
+  margin-bottom: 25px;
 }
 
-.payment-method {
+.option-item {
   display: flex;
+  flex-direction: row;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  padding: 14px 8px;
-  border-bottom: 1px solid #f0f0f0;
+  gap: 15px;
+  padding: 12px 15px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e7ff;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
-.payment-method:last-child {
-  border-bottom: none;
+.option-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(48, 90, 194, 0.15);
+  border-color: #a0b8ff;
 }
 
-.payment-method:hover {
-  background: #f9f9f9;
+.option-item.selected {
+  background: #edf2ff;
+  border-color: #305ac2;
 }
 
-.method-left {
+.option-content {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
 }
 
-.method-icon {
-  width: 24px;
-  height: 24px;
-  background: #f0f0f0;
-  border-radius: 50%;
+.option-icon {
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, #f5f8f9 0%, #e6f0ff 100%);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.method-icon img {
-  width: 16px;
-  height: 16px;
+.option-icon img {
+  max-width: 100%;
+  max-height: 100%;
 }
 
-.method-name {
-  font-size: 16px;
-  color: #333;
+.option-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.option-radio {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  accent-color: #305ac2;
+}
+
+.submit-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-}
-
-.hindi-text {
-  font-family: "Noto Sans Devanagari", sans-serif;
-  font-size: 14px;
-  color: #666;
-}
-
-/* 单选按钮 */
-.radio-indicator {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #007aff;
-  border-radius: 50%;
-  display: flex;
   justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.radio-inner {
-  width: 12px;
-  height: 12px;
-  background: #007aff;
-  border-radius: 50%;
-}
-
-/* 支付按钮 */
-.pay-button {
-  width: 100%;
-  padding: 16px;
-  background: #007aff;
-  color: white;
+  font-size: 18px;
+  background: linear-gradient(90deg, #305ac2 0%, #4286f4 100%);
+  color: #fff;
   border: none;
   border-radius: 10px;
+  cursor: pointer;
+  margin: 10px auto 0;
+  font-weight: 600;
+  width: 100%;
+  max-width: 300px;
+  height: 55px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(48, 90, 194, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(48, 90, 194, 0.4);
+}
+
+.submit-btn:active {
+  transform: translateY(1px);
+}
+
+.bottom {
+  box-shadow: 0 6px 20px 0 hsla(0, 0%, 72.9%, 0.2);
+  border-radius: 12px;
+  padding: 25px;
+  margin: 25px auto 0;
+  width: 90%;
+  background: #fff;
+}
+
+.bottom .title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #305ac2;
+  margin-bottom: 15px;
+}
+
+.description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* 弹窗样式 */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  backdrop-filter: blur(3px);
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal.show {
+  display: block;
+  opacity: 1;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 15px 15px 0 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 90vh;
+  overflow-y: visible;
+  padding: 20px;
+  box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.2);
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  box-sizing: border-box;
+}
+
+.modal.show .modal-content {
+  transform: translateY(0);
+}
+
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  font-size: 32px;
+  font-weight: bold;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #ff4757;
+}
+
+.modal-text {
+  font-size: 17px;
+  margin-bottom: 20px;
+  color: #555;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.qrcode-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.modal-qr {
+  width: 200px;
+  height: 200px;
+  border: 1px solid #e0e7ff;
+  border-radius: 12px;
+  padding: 15px;
+  background: #f9fbff;
+  margin-bottom: 15px;
+}
+
+.qr-text {
+  font-size: 16px;
+  color: #666;
+  text-align: center;
+  max-width: 300px;
+  margin-bottom: 20px;
+}
+
+.modal-input-container {
+  margin: 20px 0;
+}
+
+.input-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.modal-input {
+  width: 100%;
+  height: 50px;
+  background: #f6f6f6;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 0 15px;
   font-size: 17px;
   font-weight: 500;
-  margin-bottom: 12px;
+  outline: none;
+  transition: border 0.3s;
+  box-sizing: border-box;
+}
+
+.modal-input:focus {
+  border: 2px solid #305ac2;
+  background: #fff;
+}
+
+.modal-footer {
+  text-align: right;
+  color: #1c2aff;
+  font-size: 14px;
+  margin: 5px 0 15px;
+  font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.2s;
 }
 
-.pay-button:hover {
-  opacity: 0.9;
+.modal-button {
+  background: linear-gradient(90deg, #00b578 0%, #00cc88 100%);
+  width: 100%;
+  height: 55px;
+  border-radius: 10px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  border: 0;
+  cursor: pointer;
+  margin: 20px 0 10px;
+  box-shadow: 0 4px 15px rgba(0, 181, 120, 0.3);
+  transition: all 0.3s ease;
 }
 
-.pay-button:active {
-  opacity: 0.8;
+.modal-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 181, 120, 0.4);
 }
 
-/* 提示文字 */
-.payment-note {
-  font-size: 13px;
-  color: #888;
-  text-align: center;
-  line-height: 1.4;
-  padding: 0 8px;
+.modal-button i {
+  margin-right: 8px;
+  font-size: 16px;
 }
 
-/* 响应式调整 */
-@media (max-width: 400px) {
-  .payment-container {
-    padding: 15px;
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .payment-options {
+    grid-template-columns: 1fr;
+  }
+  
+  .header {
+    padding: 20px 15px;
+  }
+  
+  .header .title {
+    font-size: 20px;
+  }
+  
+  .header .amount {
+    font-size: 36px;
+  }
+  
+  .content {
+    padding: 25px 20px;
+  }
+  
+  .option-name {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 20px 15px;
+  }
+  
+  .option-item {
+    padding: 10px 12px;
+  }
+  
+  .option-icon {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .modal-content {
+    padding: 20px 15px;
+  }
+  
+  .modal-text {
+    font-size: 16px;
   }
 }
 </style>

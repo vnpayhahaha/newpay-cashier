@@ -1,0 +1,460 @@
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .container {
+            background: linear-gradient(135deg, #f5f8f9 0%, #e6f0ff 100%);
+            min-height: 100vh;
+            padding-bottom: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            letter-spacing: .4px;
+            font-weight: 700;
+            font-size: 24px;
+            color: #fff;
+            gap: 8px;
+            padding: 15px 20px; 
+            background: linear-gradient(90deg, #305ac2 0%, #1a3a9c 100%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header .logo {
+            width: auto;
+            height: 36px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        
+        .content {
+            background: #fff;
+            box-shadow: 0 6px 20px 0 hsla(0, 0%, 72.9%, 0.3);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            margin: 30px auto 0;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .amount-label {
+            text-align: center;
+            font-size: 17px;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .amount-display {
+            display: flex;
+            gap: 3px;
+            font-size: 36px;
+            color: #305ac2;
+            font-weight: 800;
+            margin-bottom: 25px;
+        }
+        
+        .instruction {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 18px;
+            color: #2c3e50;
+        }
+        
+        .qrcode-container {
+            position: relative;
+            margin-bottom: 18px;
+            border: 1px solid #e0e7ff;
+            border-radius: 12px;
+            padding: 15px;
+            background: #f9fbff;
+            box-shadow: 0 4px 8px rgba(48, 90, 194, 0.1);
+        }
+        
+        .qrcode {
+            width: 160px;
+            height: 160px;
+            transition: transform 0.3s ease;
+        }
+        
+        .qrcode:hover {
+            transform: scale(1.03);
+        }
+        
+        .scan-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: linear-gradient(90deg, #305ac2 0%, #4286f4 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: 600;
+            width: 210px;
+            height: 50px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(48, 90, 194, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .scan-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(48, 90, 194, 0.4);
+        }
+        
+        .scan-button:active {
+            transform: translateY(1px);
+        }
+        
+        .scan-button i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        
+        .payment-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 30px 0 20px;
+            width: 100%;
+            text-align: left;
+            border-bottom: 2px solid #f0f4ff;
+            padding-bottom: 10px;
+        }
+        
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            border: 1px dashed #d0d9ff;
+            border-radius: 10px;
+            margin: 10px 0 20px;
+            padding: 15px;
+            background: #f9fbff;
+        }
+        
+        .option-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        
+        .option-item:hover {
+            background: #edf2ff;
+        }
+        
+        .option-content {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .option-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f8f9 0%, #e6f0ff 100%);
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .option-icon img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .option-name {
+            font-size: 18px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .option-radio {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #305ac2;
+        }
+        
+        .bottom {
+            display: flex;
+            flex-direction: column;
+            width: 90%;
+            max-width: 450px;
+            margin: 25px auto;
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .bottom .title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #305ac2;
+            margin-bottom: 8px;
+        }
+        
+        .bottom .description {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(3px);
+            overflow: auto;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.show {
+            display: block;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            margin: 8% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+        
+       .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #888;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .paytm-close-btn｛
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #888;
+            cursor: pointer;
+            transition: color 0.2s;
+         ｝
+        .close-btn:hover {
+            color: #ff4757;
+        }
+        .paytm-close-btn:hover {
+            color: #ff4757;
+        }
+        
+        .modal-content h3 {
+            text-align: center;
+            font-size: 24px;
+            color: #305ac2;
+            margin-bottom: 20px;
+        }
+        
+        .modal-content p {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .modal-qr {
+            display: block;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 25px;
+            border: 1px solid #e0e7ff;
+            border-radius: 12px;
+            padding: 10px;
+            background: #f9fbff;
+        }
+        
+        .modal-button {
+            background: linear-gradient(90deg, #00b578 0%, #00cc88 100%);
+            width: 100%;
+            height: 55px;
+            border-radius: 10px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            border: 0;
+            cursor: pointer;
+            margin: 25px 0 15px;
+            box-shadow: 0 4px 15px rgba(0, 181, 120, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 181, 120, 0.4);
+        }
+        
+        .modal-button:active {
+            transform: translateY(1px);
+        }
+        
+        .modal-button i {
+            margin-right: 10px;
+        }
+        
+        .modal-footer {
+            text-align: right;
+            color: #1c2aff;
+            font-size: 14px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .modal-input {
+            width: 100%;
+            height: 50px;
+            background: #f6f6f6;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            padding: 0 15px;
+            font-size: 18px;
+            font-weight: 600;
+            outline: none;
+            transition: border 0.3s;
+        }
+        
+        .modal-input:focus {
+            border: 2px solid #305ac2;
+            background: #fff;
+        }
+        
+        /* 下载状态提示 */
+        .download-status {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s, top 0.3s;
+        }
+        
+        .download-status.show {
+            top: 30px;
+            opacity: 1;
+        }
+        
+        .download-status.success {
+            border-left: 4px solid #00b578;
+        }
+        
+        .download-status.error {
+            border-left: 4px solid #ff4757;
+        }
+        
+        .download-status i {
+            font-size: 24px;
+        }
+        
+        .download-status.success i {
+            color: #00b578;
+        }
+        
+        .download-status.error i {
+            color: #ff4757;
+        }
+        
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(48, 90, 194, 0.2);
+            border-top: 3px solid #305ac2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 480px) {
+            .header {
+                font-size: 20px;
+            }
+            
+            .content {
+                width: 95%;
+                padding: 20px 15px;
+            }
+            
+            .amount-display {
+                font-size: 32px;
+            }
+            
+            .instruction {
+                font-size: 18px;
+            }
+            
+            .scan-button {
+                width: 100%;
+                max-width: 250px;
+                font-size: 16px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+        }

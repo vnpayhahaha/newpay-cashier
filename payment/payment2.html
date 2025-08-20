@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Payment</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="static/css/style.css">
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">Payment Amount</div>
+            <div class="amount" id="money">₹100</div>
+
+        </div>
+        
+        <div class="content">
+            <div class="payment-title">Choose Your Payment Method</div>
+            <div class="payment-options">
+                <div class="option-item" data-method="paytm">
+                    <div class="option-content">
+                        <div class="option-icon">
+                            <img src='static/img/paytm.svg' alt="Paytm Logo">
+
+                        </div>
+                        <div class="option-name">Paytm</div>
+                    </div>
+                    <input type="radio" name="payment" class="option-radio" checked>
+                </div>
+                
+                <div class="option-item" data-method="phonepe">
+                    <div class="option-content">
+                        <div class="option-icon">
+                            <img src='static/img/phonepe.png' alt="PhonePe Logo">
+                        </div>
+                        <div class="option-name">PhonePe</div>
+                    </div>
+                    <input type="radio" name="payment" class="option-radio">
+                </div>
+                
+                <div class="option-item" data-method="gpay">
+                    <div class="option-content">
+                        <div class="option-icon">
+                            <img src='static/img/gpay.png' alt="Google Pay Logo">
+                        </div>
+                        <div class="option-name">Google Pay</div>
+                    </div>
+                    <input type="radio" name="payment" class="option-radio">
+                </div>
+                
+                <div class="option-item" data-method="bhim">
+                    <div class="option-content">
+                        <div class="option-icon">
+                            <img src='static/img/bhim.svg' alt="BHIM Logo">
+                        </div>
+                        <div class="option-name">BHIM</div>
+                    </div>
+                    <input type="radio" name="payment" class="option-radio">
+                </div>
+                
+                <div class="option-item" data-method="amazonpay">
+                    <div class="option-content">
+                        <div class="option-icon">
+                            <img src='static/img/amazonpay.svg' alt="Amazon Pay Logo">
+                        </div>
+                        <div class="option-name">Amazon Pay</div>
+                    </div>
+                    <input type="radio" name="payment" class="option-radio">
+                </div>
+                
+                <div class="option-item" data-method="other">
+                    <div class="option-content">
+                        <div class="option-icon">
+                            <img src='static/img/other.svg' alt="Other options">
+                        </div>
+                        <div class="option-name">Other options</div>
+                    </div>
+                    <input type="radio" name="payment" class="option-radio">
+                </div>
+            </div>
+            
+            <button class="submit-btn" id="submitPayment">
+                Submit Payment
+            </button>
+        </div>
+        
+        <div class="bottom">
+            <div class="title">Payment Instructions</div>
+            <div class="description">
+                Please select the payment method you need and make sure your phone has the corresponding wallet software installed. 
+                After payment, you may need to enter the UTR number for verification. UTR (Unique Transaction Reference) is a 12-digit 
+                number generated for every transaction which helps in tracking the payment.
+            </div>
+        </div>
+        
+        <!-- 弹窗结构 -->
+        <div id="paytm-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <p class="modal-text">Warning: After payment, return to enter the UTR</p>
+
+                
+                <div class="qrcode-container">
+                    <img class="modal-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Paytm:100" alt="Paytm QR Code">
+                    <p class="qr-text">Open Paytm App > Scan QR Code > Confirm Payment</p>
+                </div>
+                
+                <div class="modal-input-container">
+                    <label class="input-label">Enter UTR Number (After Payment)</label>
+                    <input type="text" class="modal-input" name="utr" placeholder="12-digit UTR number">
+                </div>
+                
+                <div class="modal-footer">How to find the UTR?</div>
+                
+                <button class="modal-button" data-method="paytm" onclick="confirmFinish()">
+
+                    <i class="fas fa-check-circle"></i> Submit Payment
+                </button>
+            </div>
+        </div>
+        
+        <div id="phonepe-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                
+                <p class="modal-text">Warning: After payment, return to enter the UTR</p>
+
+                
+                <div class="qrcode-container">
+                    <img class="modal-qr" src="" alt="PhonePe QR Code">
+                    <p class="qr-text">Open PhonePe App > Scan QR Code > Confirm Payment</p>
+                </div>
+                
+                <div class="modal-input-container">
+                    <label class="input-label">Enter UTR Number (After Payment)</label>
+                    <input type="text" class="modal-input" placeholder="12-digit UTR number">
+                </div>
+                
+                <div class="modal-footer">How to find the UTR?</div>
+                
+                <button class="modal-button" data-method="phonepe" onclick="confirmFinish()">
+                    <i class="fas fa-check-circle"></i> Submit Payment
+                </button>
+            </div>
+        </div>
+        <div id="gpay-modal" class="modal">
+
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+
+                <p class="modal-text">Warning: After payment, return to enter the UTR</p>
+                <div class="qrcode-container">
+                    <img class="modal-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PhonePe:100" alt="PhonePe QR Code">
+                    <p class="qr-text">Open PhonePe App > Scan QR Code > Confirm Payment</p>
+                </div>
+                
+                <div class="modal-input-container">
+                    <label class="input-label">Enter UTR Number (After Payment)</label>
+                    <input type="text" class="modal-input" placeholder="12-digit UTR number">
+                </div>
+                
+                <div class="modal-footer">How to find the UTR?</div>
+                
+                <button class="modal-button" data-method="phonepe" onclick="confirmFinish()">
+                    <i class="fas fa-check-circle"></i> Submit Payment
+                </button>
+            </div>
+        </div>
+        <div id="bhim-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+
+                <p class="modal-text">Warning: After payment, return to enter the UTR</p>
+                <div class="qrcode-container">
+                    <img class="modal-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PhonePe:100" alt="PhonePe QR Code">
+                    <p class="qr-text">Open PhonePe App > Scan QR Code > Confirm Payment</p>
+                </div>
+                
+                <div class="modal-input-container">
+                    <label class="input-label">Enter UTR Number (After Payment)</label>
+                    <input type="text" class="modal-input" placeholder="12-digit UTR number">
+                </div>
+                
+                <div class="modal-footer">How to find the UTR?</div>
+                
+                <button class="modal-button" data-method="phonepe" onclick="confirmFinish()">
+                    <i class="fas fa-check-circle"></i> Submit Payment
+                </button>
+            </div>
+        </div>
+        <div id="amazon-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+
+                <p class="modal-text">Warning: After payment, return to enter the UTR</p>
+                <div class="qrcode-container">
+                    <img class="modal-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PhonePe:100" alt="PhonePe QR Code">
+                    <p class="qr-text">Open PhonePe App > Scan QR Code > Confirm Payment</p>
+                </div>
+                
+                <div class="modal-input-container">
+                    <label class="input-label">Enter UTR Number (After Payment)</label>
+                    <input type="text" class="modal-input" placeholder="12-digit UTR number">
+                </div>
+                
+                <div class="modal-footer">How to find the UTR?</div>
+                
+                <button class="modal-button" data-method="phonepe" onclick="confirmFinish()">
+                    <i class="fas fa-check-circle"></i> Submit Payment
+                </button>
+            </div>
+        </div>
+        <div id="other-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+
+                <p class="modal-text">Warning: After payment, return to enter the UTR</p>
+                <div class="qrcode-container">
+                    <img class="modal-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PhonePe:100" alt="PhonePe QR Code">
+                    <p class="qr-text">Open PhonePe App > Scan QR Code > Confirm Payment</p>
+                </div>
+                
+                <div class="modal-input-container">
+                    <label class="input-label">Enter UTR Number (After Payment)</label>
+                    <input type="text" class="modal-input" placeholder="12-digit UTR number">
+                </div>
+                
+                <div class="modal-footer">How to find the UTR?</div>
+                
+                <button class="modal-button" data-method="phonepe" onclick="confirmFinish()">
+                    <i class="fas fa-check-circle"></i> Submit Payment
+                </button>
+            </div>
+        </div>
+        
+        <!-- 其他支付方式的弹窗结构类似 -->
+        <!-- 为了简洁，这里省略了其他弹窗的HTML代码 -->
+    </div>
+
+    <script>
+        window.onload = function (){
+        const url = 'https://test.tommin.cn/api/test/order_info';
+        const data_url=window.location.href;
+        const dd = data_url.split('=')[1];
+        // if(!dd){
+        //     window.location.href='./index_error.html';
+        // }
+        const data = {
+            out_order_number: dd
+        };
+        // document.getElementById('order_id').innerHTML='Order ID:'+dd;
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', url);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+            console.log(xhr)
+            if (xhr.status >= 200 && xhr.status < 300) {
+                var data = JSON.parse(xhr.response)
+                document.getElementById('money').innerHTML='<em>₹</em> '+ data.data.amount;
+                
+                // if(data.data.status==-1){
+                //     window.location.href='./index_error.html?msg'+data.msg;
+                // }
+                // if(data.data.status==2){
+                //     window.location.href='./index_success.html?msg='+data.msg;
+                // }
+                // startTimer()
+            }
+        };
+        xhr.onerror = function() {
+            console.error('Network error');
+        };
+        xhr.send(JSON.stringify(data));
+
+    }
+    function confirmFinish(){
+        const utr = document.getElementsByName('utr')[0].value;
+        if(!utr){
+            alert('请输入UTR');
+            return;
+        }
+        const data_url=window.location.href;
+        const dd = data_url.split('=')[1];
+        const data = {
+            out_order_number: dd,
+            utr:utr
+        };
+        const url = "https://api.tzpay.cloud/web/transaction";
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', url);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                var data = JSON.parse(xhr.response)
+                if(data){
+                    if(data.code===-1){
+                        notify.alert(3, data.msg, 2);
+                    }
+                    if(data.code===0){
+                        notify.alert(1, data.msg, 2);
+                        setTimeout(function(){
+                            window.location.reload();
+                        },2000)
+                    }
+                }
+            }
+        };
+        xhr.onerror = function() {
+            console.error('Network error');
+        };
+        xhr.send(JSON.stringify(data));
+    }
+
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取所有支付选项
+            const paymentOptions = document.querySelectorAll('.option-item');
+            const submitBtn = document.getElementById('submitPayment');
+            const modals = {
+                'paytm': document.getElementById('paytm-modal'),
+                'phonepe': document.getElementById('phonepe-modal'),
+                'gpay': document.getElementById('gpay-modal'),
+                'bhim': document.getElementById('bhim-modal'),
+                'amazon': document.getElementById('amazon-modal'),
+                'other': document.getElementById('other-modal'),
+
+                // 其他支付方式弹窗
+            };
+            const closeBtns = document.querySelectorAll('.close-btn');
+            
+            // 为每个支付选项添加点击事件
+            paymentOptions.forEach(option => {
+                const radio = option.querySelector('.option-radio');
+                const method = option.getAttribute('data-method');
+                
+                // 点击整个选项区域
+                option.addEventListener('click', function(e) {
+                    // 避免点击radio时触发两次
+                    if (e.target !== radio) {
+                        radio.checked = true;
+                        updateSelection();
+                        showModal(method);
+                    }
+                });
+                
+                // 点击radio按钮
+                radio.addEventListener('click', function() {
+                    updateSelection();
+                    showModal(method);
+                });
+            });
+            
+            // 提交按钮点击事件
+            submitBtn.addEventListener('click', function() {
+                const selectedMethod = document.querySelector('.option-item.selected').getAttribute('data-method');
+                showModal(selectedMethod);
+            });
+            
+            // 关闭按钮事件
+            closeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const modal = this.closest('.modal');
+                    modal.classList.remove('show');
+                });
+            });
+            
+            // 点击弹窗外部关闭
+            window.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal')) {
+                    e.target.classList.remove('show');
+                }
+            });
+            
+            // 更新选中状态的UI
+            function updateSelection() {
+                paymentOptions.forEach(option => {
+                    const radio = option.querySelector('.option-radio');
+                    if (radio.checked) {
+                        option.classList.add('selected');
+                    } else {
+                        option.classList.remove('selected');
+                    }
+                });
+            }
+            
+            // 显示对应的弹窗
+            function showModal(method) {
+                // 隐藏所有弹窗
+                Object.values(modals).forEach(modal => {
+                    console.log(modal)
+                    if (modal) modal.classList.remove('show');
+                    const input = modal.querySelector('.modal-input');
+                    if (input) {
+                        input.value = ''; // 清空输入框
+                    }
+                    // const amount = document.getElementById('money').innerHTML;
+                    // document.getElementById('amount').innerHTML=amount;
+                    modal.querySelector('.modal-qr').src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PhonePe:100';
+                });
+                
+                // 显示当前支付方式的弹窗
+                if (modals[method]) {
+                    modals[method].classList.add('show');
+                } else {
+                    // 默认显示PhonePe弹窗
+                    modals.phonepe.classList.add('show');
+                }
+            }
+            
+            // 初始化选中状态
+            updateSelection();
+        });
+
+
+    </script>
+</body>
+</html>
